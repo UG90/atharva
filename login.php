@@ -4,9 +4,9 @@ session_start();
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Check if the form was submitted
     $host = "localhost";
-    $username = "your_username";
-    $password = "your_password";
-    $database = "your_database";
+    $username = "root";
+    $password = "ft5afvaf";
+    $database = "login";
 
     $conn = new mysqli($host, $username, $password, $database);
 
