@@ -1,42 +1,62 @@
 <?php
 session_start();
 
-// Database connection (you should replace with your actual database credentials)
-$servername = "localhost";
-$username = "root";
-$password = "ft5afvaf";
-$dbname = "login";
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Check if the form was submitted
+    $host = "localhost";
+    $username = "your_username";
+    $password = "your_password";
+    $database = "your_database";
 
-$conn = new mysqli($servername, $username, $password, $dbname);
+    $conn = new mysqli($host, $username, $password, $database);
 
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-// Process the submitted form data
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST["username"];
-    $password = $_POST["password"];
-    
-    // You should sanitize and validate user input here to prevent SQL injection and other security issues.
-    
-    // Check user credentials in the database
-    $query = "SELECT * FROM users WHERE username = ? AND password = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("ss", $username, $password);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows === 1) {
-        // Authentication successful
-        $_SESSION["username"] = $username;
-        header("Location: dashboard.php"); // Redirect to a dashboard or home page
-        exit();
-    } else {
-        // Authentication failed
-        echo "Invalid username or password. Please try again.";
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
     }
-}
 
-$conn->close();
+    // Retrieve user input
+    $username = $_POST['username'];
+    $password = $_POST['password'];
+
+    // Query the database to retrieve the hashed password
+    $query = "SELECT username, password FROM members WHERE username = '$username'";
+    $result = $conn->query($query);
+
+    if ($result->num_rows == 1) {
+        $row = $result->fetch_assoc();
+
+        // Verify the password
+        if (password_verify($password, $row['password'])) {
+            // Passwords match, create a session
+            $_SESSION['username'] = $username;
+            header("Location: welcome.php"); // Redirect to a welcome page
+            exit;
+        } else {
+            echo "Invalid password.";
+        }
+    } else {
+        echo "User not found.";
+    }
+
+    $conn->close();
+}
 ?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Page</title>
+</head>
+<body>
+    <form action="" method="post">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required><br><br>
+        
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br><br>
+
+        <input type="submit" value="Login">
+    </form>
+</body>
+</html>
+
